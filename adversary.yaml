@@ -1,0 +1,37 @@
+name: elasticclaw
+version: 0.1.0
+description: Reviews ElasticClaw workspaces, workflows, goals, agents, and execution policies for correctness, maintainability, reliability, and efficiency.
+
+triggers:
+  manual: true
+  files_changed:
+    - ".elasticclaw/**"
+    - "elasticclaw.yaml"
+    - "elasticclaw.yml"
+    - "workspace.yaml"
+    - "workspace.yml"
+    - "workflow.yaml"
+    - "workflow.yml"
+    - "goal.yaml"
+    - "goal.yml"
+    - "agent.yaml"
+    - "agent.yml"
+
+runtime:
+  name: node
+  version: "22"
+  command:
+    - dist/index.js
+
+permissions:
+  enforcement: advisory
+  filesystem:
+    read:
+      - .
+    write: []
+  network: false
+  environment:
+    allow: []
+
+findings:
+  format: adversary.review.v1
