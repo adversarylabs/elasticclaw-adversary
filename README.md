@@ -1,0 +1,1 @@
+# elasticclaw-adversary
