@@ -1,0 +1,6 @@
+kind: workflow
+name: malformed
+tasks:
+  build:
+    needs: [plan
+    action: Build the project.

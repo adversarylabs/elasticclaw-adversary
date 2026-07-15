@@ -14,7 +14,7 @@ import {
   stringList,
 } from "./model.js";
 
-const EXPLICIT_DOCUMENT_NAMES = /^(?:elasticclaw(?:-config)?|workspace|workflow|goal|agent)\.ya?ml$/i;
+const EXPLICIT_DOCUMENT_NAMES = /^(?:elasticclaw(?:-config)?|workspace|workflow|goal|agent)(?:-[^.]+)?\.ya?ml$/i;
 
 export function parseFactoryDocument(path: string, source: string): FactoryParseResult {
   const lineCounter = new LineCounter();
@@ -117,7 +117,7 @@ function normalizeGoal(path: string, source: string, raw: DataMap): GoalDefiniti
     artifacts: combinedLists(raw.artifacts, raw.expected_artifacts, raw.outputs, raw.expected_outputs, raw.deliverables),
     completionCriteria: completionCriteria(raw),
     raw,
-    location: entityLocation(path, source, id, text),
+    location: entityLocation(path, source, text, id),
   };
 }
 
@@ -141,6 +141,7 @@ function normalizeWorkflow(path: string, source: string, raw: DataMap): Workflow
 function normalizeTask(path: string, source: string, id: string, raw: DataMap, index: number): TaskDefinition {
   const taskId = asString(raw.id) ?? asString(raw.name) ?? (id.length > 0 ? id : `task-${index + 1}`);
   const description = firstString(raw.description, raw.objective, raw.prompt, raw.run, raw.action, raw.name) ?? "";
+  const location = entityLocation(path, source, taskId, description);
   return {
     id: taskId,
     name: asString(raw.name) ?? taskId,
@@ -157,7 +158,16 @@ function normalizeTask(path: string, source: string, id: string, raw: DataMap, i
     permissions: raw.permissions ?? raw.policy,
     raw,
     index,
-    location: entityLocation(path, source, taskId, description),
+    location,
+    fieldLocations: {
+      description: taskFieldLocation(path, source, location, ["description", "objective", "prompt", "run", "action", "name"]),
+      needs: taskFieldLocation(path, source, location, ["needs", "depends_on", "dependencies", "after"]),
+      inputs: taskFieldLocation(path, source, location, ["inputs", "consumes", "requires"]),
+      outputs: taskFieldLocation(path, source, location, ["outputs", "produces", "artifacts"]),
+      retry: taskFieldLocation(path, source, location, ["retry", "retries", "retry_policy"]),
+      timeout: taskFieldLocation(path, source, location, ["timeout", "timeout_minutes", "timeout-minutes"]),
+      model: taskFieldLocation(path, source, location, ["model"]),
+    },
   };
 }
 
@@ -226,11 +236,12 @@ function isWorkflowDocument(basename: string, kind: string, raw: DataMap): boole
 }
 
 function isAgentDocument(basename: string, kind: string, raw: DataMap): boolean {
-  return /^agent(?:-[^.]+)?\.ya?ml$/i.test(basename) || kind === "agent" || ("responsibilities" in raw && !("tasks" in raw));
+  const singletonFilename = /^agent(?:-[^.]+)?\.ya?ml$/i.test(basename) && !("agents" in raw);
+  return singletonFilename || kind === "agent" || ("responsibilities" in raw && !("tasks" in raw));
 }
 
 function isExplicitFactoryPath(path: string): boolean {
-  return EXPLICIT_DOCUMENT_NAMES.test(path.split("/").pop() ?? "") || /\.elasticclaw\//.test(path);
+  return EXPLICIT_DOCUMENT_NAMES.test(path.split("/").pop() ?? "");
 }
 
 function looksLikeFactorySource(source: string): boolean {
@@ -241,10 +252,29 @@ function entityLocation(path: string, source: string, ...identifiers: string[]):
   const lines = source.split(/\r?\n/);
   for (const identifier of identifiers.filter((value) => value.length > 0)) {
     const escaped = escapeRegExp(identifier.slice(0, 80));
-    const index = lines.findIndex((line) => new RegExp(`(?:^|[:\\-]\\s*)["']?${escaped}["']?(?:\\s*$|\\s*#)`, "i").test(line.trim()) || line.includes(identifier));
+    const mapKey = new RegExp(`^\\s*(?:-\\s*)?["']?${escaped}["']?\\s*:\\s*(?:#.*)?$`, "i");
+    const identityField = new RegExp(`^\\s*(?:-\\s*)?(?:id|name)\\s*:\\s*["']?${escaped}["']?(?:\\s*$|\\s*#)`, "i");
+    const exact = lines.findIndex((line) => mapKey.test(line) || identityField.test(line));
+    if (exact >= 0) return { file: path, line: exact + 1, snippet: lines[exact]?.trim() ?? "" };
+    const index = lines.findIndex((line) => identifier.length >= 12 && line.includes(identifier));
     if (index >= 0) return { file: path, line: index + 1, snippet: lines[index]?.trim() ?? "" };
   }
   return { file: path, line: 1, snippet: lines[0]?.trim() ?? "" };
+}
+
+function taskFieldLocation(path: string, source: string, task: Location, fields: string[]): Location | undefined {
+  const lines = source.split(/\r?\n/);
+  const start = Math.max(0, task.line - 1);
+  const taskIndent = lines[start]?.match(/^\s*/)?.[0].length ?? 0;
+  const matcher = new RegExp(`^\\s*(?:${fields.map(escapeRegExp).join("|")})\\s*:`, "i");
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index] ?? "";
+    if (line.trim().length === 0 || line.trimStart().startsWith("#")) continue;
+    const indent = line.match(/^\s*/)?.[0].length ?? 0;
+    if (indent <= taskIndent) break;
+    if (matcher.test(line)) return { file: path, line: index + 1, snippet: line.trim() };
+  }
+  return undefined;
 }
 
 function markdownStatements(source: string): string[] {

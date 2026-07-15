@@ -1,0 +1,27 @@
+agents:
+  implementer:
+    description: Implements scoped changes in service source files.
+    responsibilities:
+      - implement approved changes
+    scope:
+      - services/api/src
+    permissions:
+      filesystem:
+        read: [services/api]
+        write: [services/api/src]
+      shell:
+        allow: [npm, git diff]
+      network: false
+  validator:
+    description: Runs tests and validates produced artifacts.
+    responsibilities:
+      - validation and tests
+    scope:
+      - services/api/test
+    permissions:
+      filesystem:
+        read: [services/api]
+        write: []
+      shell:
+        allow: [npm test]
+      network: false

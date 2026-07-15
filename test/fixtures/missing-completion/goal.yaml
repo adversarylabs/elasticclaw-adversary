@@ -1,0 +1,5 @@
+kind: goal
+id: document-api
+objective: Create an API migration guide for clients upgrading to version 2.
+constraints:
+  - Do not change application code.

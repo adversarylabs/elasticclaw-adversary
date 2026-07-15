@@ -1,0 +1,11 @@
+kind: workflow
+id: deployment
+completion_criteria:
+  - Deployment verification succeeds.
+tasks:
+  deploy:
+    agent: release-agent
+    action: Deploy the release to production.
+  verify:
+    action: Validate the production deployment.
+    needs: [deploy]

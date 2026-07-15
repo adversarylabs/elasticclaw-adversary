@@ -1,0 +1,7 @@
+agents:
+  architecture-reviewer:
+    description: Reviews changes for architecture and maintainability.
+    responsibilities: [architecture review]
+  senior-reviewer:
+    description: Performs architecture review and approves changes.
+    responsibilities: [architecture review]

@@ -15,11 +15,11 @@ export function agentText(agent: AgentDefinition): string {
 }
 
 export function isMutationTask(task: TaskDefinition): boolean {
-  return MUTATION_PATTERN.test(taskText(task));
+  return MUTATION_PATTERN.test(`${task.id} ${task.name} ${task.description} ${task.action ?? ""}`);
 }
 
 export function isValidationTask(task: TaskDefinition): boolean {
-  return VALIDATION_PATTERN.test(taskText(task));
+  return VALIDATION_PATTERN.test(`${task.id} ${task.name} ${task.description} ${task.action ?? ""}`);
 }
 
 export function isLongRunningTask(task: TaskDefinition): boolean {

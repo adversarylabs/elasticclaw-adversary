@@ -1,0 +1,12 @@
+kind: workflow
+id: autonomous-release
+description: Implement and publish a package release.
+timeout: 30m
+completion_criteria:
+  - The package is published.
+tasks:
+  implement:
+    action: Edit package sources and commit the change.
+  publish:
+    action: Publish the package to the registry.
+    needs: [implement]

@@ -31,18 +31,18 @@ function dependencies(workflow: WorkflowDefinition): Detection[] {
   for (const task of workflow.tasks) {
     for (const dependency of task.needs) {
       if (!byId.has(dependency)) {
-        detections.push(dependencyDetection(workflow, task, `depends on missing task ${dependency}`, { issue: "missing-task", dependency }));
+        detections.push(dependencyDetection(workflow, task, "needs", `depends on missing task ${dependency}`, { issue: "missing-task", dependency }));
       }
     }
     for (const producer of outputReferences(task.raw)) {
       if (byId.has(producer) && !task.needs.includes(producer)) {
-        detections.push(dependencyDetection(workflow, task, `uses ${producer} output without declaring the dependency`, { issue: "undeclared-output-dependency", producer }));
+        detections.push(dependencyDetection(workflow, task, "description", `uses ${producer} output without declaring the dependency`, { issue: "undeclared-output-dependency", producer }));
       }
     }
     for (const input of normalizedArtifacts(task.inputs)) {
       const matching = producers.get(input) ?? [];
       if (matching.length === 1 && matching[0] !== task.id && !task.needs.includes(matching[0] ?? "")) {
-        detections.push(dependencyDetection(workflow, task, `consumes ${input} without depending on its producer`, {
+        detections.push(dependencyDetection(workflow, task, "inputs", `consumes ${input} without depending on its producer`, {
           issue: "artifact-without-dependency",
           artifact: input,
           producer: matching[0],
@@ -109,14 +109,21 @@ function timeouts(workflow: WorkflowDefinition): Detection[] {
   }));
 }
 
-function dependencyDetection(workflow: WorkflowDefinition, task: TaskDefinition, label: string, data: Record<string, unknown>): Detection {
+function dependencyDetection(
+  workflow: WorkflowDefinition,
+  task: TaskDefinition,
+  field: "description" | "needs" | "inputs",
+  label: string,
+  data: Record<string, unknown>,
+): Detection {
+  const location = task.fieldLocations[field] ?? task.location;
   return {
     ruleId: "elasticclaw.workflow.dependencies",
     subject: task.id,
     groupKey: `elasticclaw.workflow.dependencies:${workflow.location.file}:${workflow.id}`,
-    file: task.location.file,
-    line: task.location.line,
-    snippet: task.location.snippet,
+    file: location.file,
+    line: location.line,
+    snippet: location.snippet,
     label: `${workflow.id}/${task.id} ${label}`,
     data: { workflow: workflow.id, task: task.id, declaredNeeds: task.needs, ...data },
   };

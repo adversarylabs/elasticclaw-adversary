@@ -1,0 +1,10 @@
+kind: goal
+id: reduce-api-latency
+objective: Reduce the API p95 latency from 400ms to under 250ms without changing the public response schema.
+constraints:
+  - Preserve API compatibility.
+expected_artifacts:
+  - benchmark-report.json
+success_criteria:
+  - The benchmark reports p95 latency below 250ms.
+  - Contract tests pass.

@@ -4,7 +4,7 @@ import { agentText, responsibilityCategories, scopesAreDisjoint } from "./helper
 import { type Detection } from "./types.js";
 
 export function analyzeAgents(model: FactoryModel): Detection[] {
-  return [...permissionDetections(model), ...overlapDetections(model.agents)];
+  return [...permissionDetections(model), ...overlapDetections(model.agents.filter((agent) => agent.source === "yaml"))];
 }
 
 function permissionDetections(model: FactoryModel): Detection[] {

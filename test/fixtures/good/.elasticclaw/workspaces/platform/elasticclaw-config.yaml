@@ -1,0 +1,6 @@
+schema_version: v1
+name: platform
+repositories:
+  - services/api
+provider: replicated
+env: {}

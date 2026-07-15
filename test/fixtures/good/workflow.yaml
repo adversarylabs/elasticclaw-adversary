@@ -1,0 +1,26 @@
+kind: workflow
+id: optimize-api
+description: Implement and validate the approved latency improvement.
+timeout: 45m
+completion_criteria:
+  - Validation produces a passing benchmark and contract-test report.
+tasks:
+  plan:
+    agent: implementer
+    action: Analyze the benchmark and produce a scoped implementation plan.
+    outputs: [plan]
+  implement:
+    agent: implementer
+    action: Edit the service implementation according to the approved plan.
+    needs: [plan]
+    inputs: [plan]
+    outputs: [change]
+    retry:
+      enabled: true
+      max_attempts: 2
+  validate:
+    agent: validator
+    action: Run contract tests and benchmark validation.
+    needs: [implement]
+    inputs: [change]
+    outputs: [validation-report]

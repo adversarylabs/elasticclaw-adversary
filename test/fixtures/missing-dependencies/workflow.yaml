@@ -1,0 +1,14 @@
+kind: workflow
+id: artifact-flow
+timeout: 20m
+completion_criteria:
+  - The report is generated from the scanned inventory.
+tasks:
+  inventory:
+    action: Inspect the repository and produce an inventory.
+    outputs: [inventory-json]
+  report:
+    action: Generate the report from ${{ tasks.inventory.outputs.inventory-json }}.
+    inputs: [inventory-json]
+    needs: [missing-scan]
+    outputs: [report]

@@ -43,6 +43,7 @@ export interface TaskDefinition {
   raw: DataMap;
   index: number;
   location: Location;
+  fieldLocations: Partial<Record<"description" | "needs" | "inputs" | "outputs" | "retry" | "timeout" | "model", Location>>;
 }
 
 export interface WorkflowDefinition {

@@ -1,0 +1,11 @@
+kind: workflow
+id: validate-config
+timeout: 5m
+completion_criteria:
+  - The schema validator exits successfully.
+tasks:
+  validate-json:
+    action: Parse JSON and validate it against the repository schema.
+    model: gpt-5-pro
+    reasoning: high
+    timeout: 2m

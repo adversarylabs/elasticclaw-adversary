@@ -1,0 +1,9 @@
+kind: workflow
+id: poll-service
+timeout: 15m
+completion_criteria:
+  - The service returns ready.
+tasks:
+  wait:
+    action: Poll the external service until success.
+    retry: forever
