@@ -81,3 +81,7 @@ The SDK owns grouping, ranking, suppression, and terminal or JSON rendering. The
 ## v0.1.0 boundaries
 
 This release only reasons about supported declarative factory configuration and the durable Markdown context in ElasticClaw workspace directories. It does not inspect application implementation, execute workflows, infer permissions from prose, or claim validation for unrecognized workflow syntax. These constraints keep early findings high-confidence while real-world usage informs `0.1.1`.
+
+## Automatic detection
+
+`adversary auto` selects the elasticclaw adversary when changes include `.elasticclaw/**` or supported factory files such as `workflow-production.yaml`, plus the other domain-specific patterns declared in `adversary.yaml`. Unrelated changes do not select it.

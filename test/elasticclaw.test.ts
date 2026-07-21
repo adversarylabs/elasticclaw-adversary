@@ -1,10 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  REVIEW_RESULT_SCHEMA_VERSION,
-  TerminalRenderer,
-  createAdversaryRunEnvelope,
-} from "@adversarylabs/sdk";
+import { TerminalRenderer, createAdversaryRunEnvelope } from "@adversarylabs/sdk";
 import { createApp } from "../src/index.ts";
 import { discoverFactory } from "../src/discover.ts";
 
@@ -176,7 +172,6 @@ test("JSON output uses the canonical review protocol", async () => {
   const output = await review("good");
   const envelope = JSON.parse(JSON.stringify(createAdversaryRunEnvelope(output)));
   assert.equal(envelope.protocolVersion, 1);
-  assert.equal(envelope.result.schemaVersion, REVIEW_RESULT_SCHEMA_VERSION);
-  assert.equal(envelope.result.schemaVersion, "adversary.review.v1");
+  assert.equal("schemaVersion" in envelope.result, false);
   assert.equal(envelope.result.adversary.name, "elasticclaw");
 });
