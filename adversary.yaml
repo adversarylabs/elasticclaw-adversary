@@ -1,5 +1,5 @@
 name: elasticclaw
-version: 0.0.3
+version: 0.0.4
 description: Reviews ElasticClaw workspaces, workflows, goals, agents, and execution policies for correctness, maintainability, reliability, and efficiency.
 
 triggers:
