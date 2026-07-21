@@ -17,6 +17,20 @@ triggers:
     - "agent.yaml"
     - "agent.yml"
 
+detection:
+  files:
+    - ".elasticclaw/**"
+    - "**/elasticclaw*.yaml"
+    - "**/elasticclaw*.yml"
+    - "**/workspace*.yaml"
+    - "**/workspace*.yml"
+    - "**/workflow*.yaml"
+    - "**/workflow*.yml"
+    - "**/goal*.yaml"
+    - "**/goal*.yml"
+    - "**/agent*.yaml"
+    - "**/agent*.yml"
+
 runtime:
   name: node
   version: "22"
