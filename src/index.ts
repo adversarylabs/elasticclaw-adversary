@@ -7,8 +7,8 @@ import { registerRules } from "./rules/definitions.js";
 
 export function createApp(): Adversary {
   const app = new Adversary({
-    name: "elasticclaw",
-    version: "0.1.0",
+    name: "meta/elasticclaw",
+    version: "0.0.6",
     review: { maximumFindings: 8 },
   });
   registerRules(app);
