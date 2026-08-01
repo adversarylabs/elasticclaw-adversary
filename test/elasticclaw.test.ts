@@ -137,7 +137,7 @@ test("malformed factory documents fail with a useful line location", async () =>
 test("a well-structured factory produces concrete positives and no findings", async () => {
   const output = await review("good", { raw: true });
   assert.equal(output.adversary.name, "meta/elasticclaw");
-  assert.equal(output.adversary.version, "0.0.6");
+  assert.equal(output.adversary.version, "0.0.7");
   assert.equal(output.target.filesScanned, 6);
   assert.deepEqual(output.findings, []);
   assert.deepEqual(output.rawObservations, []);
