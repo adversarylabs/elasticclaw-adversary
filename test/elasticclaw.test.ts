@@ -136,8 +136,8 @@ test("malformed factory documents fail with a useful line location", async () =>
 
 test("a well-structured factory produces concrete positives and no findings", async () => {
   const output = await review("good", { raw: true });
-  assert.equal(output.adversary.name, "meta/elasticclaw");
-  assert.equal(output.adversary.version, "0.0.7");
+  assert.equal(output.adversary.name, "factory/elasticclaw");
+  assert.equal(output.adversary.version, "0.0.8");
   assert.equal(output.target.filesScanned, 6);
   assert.deepEqual(output.findings, []);
   assert.deepEqual(output.rawObservations, []);
@@ -173,5 +173,5 @@ test("JSON output uses the canonical review protocol", async () => {
   const envelope = JSON.parse(JSON.stringify(createAdversaryRunEnvelope(output)));
   assert.equal(envelope.protocolVersion, 1);
   assert.equal("schemaVersion" in envelope.result, false);
-  assert.equal(envelope.result.adversary.name, "meta/elasticclaw");
+  assert.equal(envelope.result.adversary.name, "factory/elasticclaw");
 });

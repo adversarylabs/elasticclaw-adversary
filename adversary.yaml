@@ -1,5 +1,5 @@
-name: meta/elasticclaw
-version: 0.0.7
+name: factory/elasticclaw
+version: 0.0.8
 description: Reviews ElasticClaw workspaces, workflows, goals, agents, and execution policies for correctness, maintainability, reliability, and efficiency.
 
 triggers:

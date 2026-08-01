@@ -1,6 +1,6 @@
 # Checks — what elasticclaw detects
 
-This file is the **public audit list** of detectors for the **elasticclaw** adversary. It reviews an ElasticClaw software factory *as an automation platform* — workspaces, goals, workflows, agents, and execution policy — and answers one question: does this configuration provide enough correctness, permission, validation, and failure boundaries to support autonomous execution? It does not review application source code.
+This file is the **public audit list** of detectors for the **factory/elasticclaw** adversary. It reviews an ElasticClaw software factory *as an automation platform* — workspaces, goals, workflows, agents, and execution policy — and answers one question: does this configuration provide enough correctness, permission, validation, and failure boundaries to support autonomous execution? It does not review application source code.
 
 Runtime source of truth: [`src/spec.ts`](src/spec.ts) / [`src/rules.ts`](src/rules.ts).
 
@@ -8,7 +8,7 @@ Runtime source of truth: [`src/spec.ts`](src/spec.ts) / [`src/rules.ts`](src/rul
 
 **Precision stance:** The upstream schema is still evolving — common aliases (`tasks`/`steps`/`jobs`, `needs`/`depends_on`, completion/acceptance criteria) are normalized, but unknown syntax is never guessed at. Malformed *recognized* documents produce a precise configuration finding; valid-but-unsupported documents produce nothing. Judgment rules (goal quality, permission justification) ask a review question at low/medium confidence rather than asserting a defect. Deterministic graph rules (dependencies, retries) fire at full confidence.
 
-Public grounding: general autonomous-agent safety practice — bounded retries, explicit completion criteria, least-privilege tool access, and validation after mutation; the same principles the `meta/adversary` catalog applies to adversaries themselves.
+Public grounding: general autonomous-agent safety practice — bounded retries, explicit completion criteria, least-privilege tool access, and validation after mutation; the same principles the `adversarylabs/adversary` catalog applies to adversaries themselves.
 
 ---
 
@@ -161,4 +161,4 @@ The overall assessment (`elasticclaw.review`, with `elasticclaw.factory.none` / 
 | Application source code quality | language adversaries (`go/*`, `typescript`, …) |
 | CI pipelines invoked by workflows | `ci/github-actions` / `ci/depot` / `gitlab-ci` |
 | Committed secrets in config | `security/secrets` |
-| Adversary-definition quality (this platform's own reviewers) | `meta/adversary` |
+| Adversary-definition quality (this platform's own reviewers) | `adversarylabs/adversary` |
