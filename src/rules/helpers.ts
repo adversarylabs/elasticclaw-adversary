@@ -89,3 +89,32 @@ export function scopesAreDisjoint(left: AgentDefinition, right: AgentDefinition)
 function normalizeScope(value: string): string {
   return value.toLowerCase().replace(/[\\/]+$/, "").trim();
 }
+
+export function hasUnscopedOnePrPolicy(text: string): boolean {
+  if (!text || text.length === 0) return false;
+  const t = text.toLowerCase();
+
+  const mentionsOnePrPerRepo =
+    /\b(?:one|exactly one|single)\s+open\s+PR\s+per\s+(?:repo|repository)\b/.test(t);
+  const mentionsCloseExtras =
+    /\bclose the extras\b|\bclose.*(?:other|extra|additional).*PRs?\b/i.test(t) ||
+    /if you discover multiple open PRs in one repo/i.test(t);
+  const mentionsSoleAdopt =
+    /\b(?:sole|only) open PR in the repo\b|\badopt.*(?:the )?sole open PR\b/i.test(t);
+  const hasUnscopedCountCheck =
+    /open PR count > 1|more than one open PR.*repo|number of open PRs.*(?:>|greater than)/i.test(t) &&
+    !/for this issue/i.test(t);
+
+  const hasBad = mentionsOnePrPerRepo || mentionsCloseExtras || mentionsSoleAdopt || hasUnscopedCountCheck;
+  if (!hasBad) return false;
+
+  const hasSafeScope =
+    /\bfor this (?:issue|ticket)\b/i.test(t) ||
+    /leave other issues'? PRs? alone/i.test(t) ||
+    /never open a second PR for this issue/i.test(t) ||
+    /\bFixes #\d+/i.test(t) ||
+    /issue-number.*branch|branch.*with.*issue/i.test(t) ||
+    /concurrent .*?(?:agent|issue)s? .*?(?:normal|expected|leave alone)/i.test(t);
+
+  return hasBad && !hasSafeScope;
+}

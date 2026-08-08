@@ -34,6 +34,7 @@ Because the upstream schema is still evolving, v0.1.0 normalizes common field al
 | `elasticclaw.permissions.too-broad` | medium | Are agent and task capabilities justified by their responsibility? |
 | `elasticclaw.workflow.dependencies` | medium | Do artifact producers and consumers have a valid execution order? |
 | `elasticclaw.agent.overlap` | low | Is agent ownership distinct enough to avoid competing work? |
+| `elasticclaw.pr-policy.cross-issue` | medium | Do one-PR or duplicate-PR rules scope to the current issue instead of the whole repository? |
 | `elasticclaw.validation.missing` | high | Is every state-changing path followed by an explicit validation boundary? |
 | `elasticclaw.retry.unbounded` | medium | Do retries and recursive behavior terminate predictably? |
 | `elasticclaw.timeout.missing` | low | Can long-running agent or external operations stall indefinitely? |
@@ -59,7 +60,7 @@ The fixtures are intentionally small:
 
 - [`test/fixtures/good`](test/fixtures/good) is a clean, bounded factory with the concrete ElasticClaw workspace layout.
 - [`test/fixtures/missing-validation`](test/fixtures/missing-validation) shows mutation and publication without a validation boundary.
-- The other directories under [`test/fixtures`](test/fixtures) isolate ambiguous goals, permission scope, dependencies, retries, timeouts, agent overlap, model selection, and workspace bloat.
+- The other directories under [`test/fixtures`](test/fixtures) isolate ambiguous goals, permission scope, dependencies, retries, timeouts, agent overlap, model selection, workspace bloat, and PR policy scoping (cross-issue vs scoped).
 
 ## Running locally
 

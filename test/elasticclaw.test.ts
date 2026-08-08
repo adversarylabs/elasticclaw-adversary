@@ -175,3 +175,19 @@ test("JSON output uses the canonical review protocol", async () => {
   assert.equal("schemaVersion" in envelope.result, false);
   assert.equal(envelope.result.adversary.name, "factory/elasticclaw");
 });
+
+test("repo-wide one-PR rules without issue scope are detected (vulnerable)", async () => {
+  const output = await review("pr-policy-cross-issue", { raw: true });
+  const finding = output.findings.find((item) => item.ruleId === "elasticclaw.pr-policy.cross-issue");
+  assert.ok(finding, "expected cross-issue PR policy finding");
+  assert.match(String(finding?.summary ?? ""), /single open PR per repository/i);
+  // evidence should point at the AGENTS.md instruction file
+  const evidenceFile = finding?.evidence?.[0]?.location?.file ?? "";
+  assert.match(evidenceFile, /AGENTS\.md/);
+});
+
+test("scoped one-PR rules for this issue only stay clean (negative)", async () => {
+  const output = await review("pr-policy-scoped");
+  const finding = output.findings.find((item) => item.ruleId === "elasticclaw.pr-policy.cross-issue");
+  assert.equal(finding, undefined, "scoped PR policy must not trigger the cross-issue rule");
+});
