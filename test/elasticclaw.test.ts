@@ -137,7 +137,7 @@ test("malformed factory documents fail with a useful line location", async () =>
 test("a well-structured factory produces concrete positives and no findings", async () => {
   const output = await review("good", { raw: true });
   assert.equal(output.adversary.name, "factory/elasticclaw");
-  assert.equal(output.adversary.version, "0.0.9");
+  assert.equal(output.adversary.version, "0.0.11");
   assert.equal(output.target.filesScanned, 6);
   assert.deepEqual(output.findings, []);
   assert.deepEqual(output.rawObservations, []);
@@ -174,4 +174,20 @@ test("JSON output uses the canonical review protocol", async () => {
   assert.equal(envelope.protocolVersion, 1);
   assert.equal("schemaVersion" in envelope.result, false);
   assert.equal(envelope.result.adversary.name, "factory/elasticclaw");
+});
+
+test("repo-wide one-PR rules without issue scope are detected (vulnerable)", async () => {
+  const output = await review("pr-policy-cross-issue", { raw: true });
+  const finding = output.findings.find((item) => item.ruleId === "elasticclaw.pr-policy.cross-issue");
+  assert.ok(finding, "expected cross-issue PR policy finding");
+  assert.match(String(finding?.summary ?? ""), /single open PR per repository/i);
+  // evidence should point at the AGENTS.md instruction file
+  const evidenceFile = finding?.evidence?.[0]?.location?.file ?? "";
+  assert.match(evidenceFile, /AGENTS\.md/);
+});
+
+test("scoped one-PR rules for this issue only stay clean (negative)", async () => {
+  const output = await review("pr-policy-scoped");
+  const finding = output.findings.find((item) => item.ruleId === "elasticclaw.pr-policy.cross-issue");
+  assert.equal(finding, undefined, "scoped PR policy must not trigger the cross-issue rule");
 });

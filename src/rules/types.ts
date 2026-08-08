@@ -11,7 +11,8 @@ export type RuleId =
   | "elasticclaw.retry.unbounded"
   | "elasticclaw.timeout.missing"
   | "elasticclaw.model.overkill"
-  | "elasticclaw.workspace.bloat";
+  | "elasticclaw.workspace.bloat"
+  | "elasticclaw.pr-policy.cross-issue";
 
 export interface Detection {
   ruleId: RuleId;

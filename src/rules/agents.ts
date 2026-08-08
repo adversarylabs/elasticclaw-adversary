@@ -1,10 +1,14 @@
 import { Confidence } from "@adversarylabs/sdk";
 import { type AgentDefinition, type FactoryModel, serialized } from "../model.js";
-import { agentText, responsibilityCategories, scopesAreDisjoint } from "./helpers.js";
+import { agentText, hasUnscopedOnePrPolicy, responsibilityCategories, scopesAreDisjoint } from "./helpers.js";
 import { type Detection } from "./types.js";
 
 export function analyzeAgents(model: FactoryModel): Detection[] {
-  return [...permissionDetections(model), ...overlapDetections(model.agents.filter((agent) => agent.source === "yaml"))];
+  return [
+    ...permissionDetections(model),
+    ...overlapDetections(model.agents.filter((agent) => agent.source === "yaml")),
+    ...prPolicyDetections(model),
+  ];
 }
 
 function permissionDetections(model: FactoryModel): Detection[] {
@@ -96,4 +100,43 @@ function permissionDetection(agent: AgentDefinition, reasons: string[]): Detecti
     label: `${agent.id} has capabilities broader than its documented responsibility`,
     data: { type: "agent", agent: agent.id, reasons },
   };
+}
+
+function prPolicyDetections(model: FactoryModel): Detection[] {
+  const detections: Detection[] = [];
+
+  for (const agent of model.agents) {
+    if (hasUnscopedOnePrPolicy(agentText(agent))) {
+      detections.push({
+        ruleId: "elasticclaw.pr-policy.cross-issue",
+        subject: agent.id,
+        groupKey: "elasticclaw.pr-policy.cross-issue:instructions",
+        file: agent.location.file,
+        line: agent.location.line,
+        snippet: agent.location.snippet,
+        label: `${agent.id} instructions or description enforce a repo-wide one-PR rule without issue scoping`,
+        data: { type: "agent", agent: agent.id },
+      });
+    }
+  }
+
+  for (const workflow of model.workflows) {
+    for (const task of workflow.tasks) {
+      const text = `${task.id} ${task.name} ${task.description} ${task.action ?? ""} ${serialized(task.raw ?? {})}`;
+      if (hasUnscopedOnePrPolicy(text)) {
+        detections.push({
+          ruleId: "elasticclaw.pr-policy.cross-issue",
+          subject: `${workflow.id}/${task.id}`,
+          groupKey: "elasticclaw.pr-policy.cross-issue:instructions",
+          file: task.location.file,
+          line: task.location.line,
+          snippet: task.location.snippet,
+          label: `${workflow.id}/${task.id} prompt or description contains repo-wide one-PR policy without issue scoping`,
+          data: { type: "task", workflow: workflow.id, task: task.id },
+        });
+      }
+    }
+  }
+
+  return detections;
 }

@@ -78,6 +78,16 @@ Public grounding: general autonomous-agent safety practice — bounded retries, 
 | **Stays quiet when** | Bounded attempts with backoff (`elasticclaw.retries.bounded` positive signal); human-gated resumption |
 | **Remediation** | Cap attempts, add backoff, and route exhaustion to a human or failure state |
 
+### `elasticclaw.pr-policy.cross-issue`
+
+| | |
+| --- | --- |
+| **What** | Instruction, prompt, or gate enforces repo-wide "one open PR per repository" without scoping to the current issue |
+| **Why** | When multiple ElasticClaw agents (or issue agents) run concurrently on different issues in the same repo, unscoped one-PR rules cause them to close, rewrite, or force-push each other's PRs, thrashing until work is lost |
+| **Looks for** | Markdown instructions (AGENTS.md, TOOLS.md), workflow prompts, or gate text containing "one open PR per repository", "exactly one open PR per repo", "close the extras", "sole open PR in the repo", or similar without "for this issue", "leave other issues' PRs alone", Fixes #N, or explicit concurrency tolerance |
+| **Stays quiet when** | Policy is explicitly scoped ("one open PR per repository for this issue"), agents are told to leave other issues' PRs alone, duplicate detection uses issue-specific evidence (Fixes #N, issue branch), or concurrent work on other issues is noted as normal |
+| **Remediation** | Scope the rule to the current issue only; add explicit language to leave PRs for other issues untouched; use issue-numbered branches and Fixes references as scoping evidence |
+
 ---
 
 ## Low
