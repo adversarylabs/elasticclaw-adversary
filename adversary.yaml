@@ -1,5 +1,5 @@
 name: factory/elasticclaw
-version: 0.0.13
+version: 0.0.14
 description: Reviews ElasticClaw workspaces, workflows, goals, agents, and execution policies for correctness, maintainability, reliability, and efficiency.
 
 triggers:
