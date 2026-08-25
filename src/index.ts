@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Adversary } from "@adversarylabs/sdk";
-import { analyzeFactory } from "./analyze.js";
+import { analyzeFactory, reviewedFileCount } from "./analyze.js";
 import { discoverFactory } from "./discover.js";
 import { registerRules } from "./rules/definitions.js";
 
@@ -15,7 +15,7 @@ export function createApp(): Adversary {
 
   app.rule("elasticclaw.review", async (ctx) => {
     const model = await discoverFactory(ctx.repoPath);
-    ctx.summary.files_scanned = model.candidates.length + model.contextFiles.length;
+    ctx.summary.files_scanned = reviewedFileCount(ctx, model);
     analyzeFactory(ctx, model);
   });
   return app;

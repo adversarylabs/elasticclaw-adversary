@@ -24,10 +24,45 @@ export function analyzeFactory(ctx: RuleContext, model: FactoryModel): void {
   detections.push(...analyzeWorkflows(model));
   detections.push(...analyzeEfficiency(model));
   detections.sort(compareDetections);
-  for (const detection of detections) ctx.observe(toObservation(detection));
+  const eligibleDetections = detections.filter((detection) => isPathInReview(ctx, detection.file));
+  for (const detection of eligibleDetections) ctx.observe(toObservation(detection));
 
-  reportPositives(ctx, model, detections);
-  reportAssessment(ctx, model, detections);
+  const reviewedModel = modelInReview(ctx, model);
+  reportPositives(ctx, reviewedModel, eligibleDetections);
+  reportAssessment(ctx, reviewedModel, eligibleDetections);
+}
+
+export function reviewedFileCount(ctx: RuleContext, model: FactoryModel): number {
+  return new Set([...model.candidates, ...model.contextFiles]
+    .filter((path) => isPathInReview(ctx, path)))
+    .size;
+}
+
+function modelInReview(ctx: RuleContext, model: FactoryModel): FactoryModel {
+  if (ctx.change === null || ctx.change.scanMode === "all") return model;
+  return {
+    workspaces: model.workspaces.filter((item) => isPathInReview(ctx, item.location.file)),
+    goals: model.goals.filter((item) => isPathInReview(ctx, item.location.file)),
+    workflows: model.workflows.filter((item) => isPathInReview(ctx, item.location.file)),
+    agents: model.agents.filter((item) => isPathInReview(ctx, item.location.file)),
+    failures: model.failures.filter((item) => isPathInReview(ctx, item.path)),
+    bloat: model.bloat.filter((item) => isPathInReview(ctx, item.path)),
+    candidates: model.candidates.filter((path) => isPathInReview(ctx, path)),
+    contextFiles: model.contextFiles.filter((path) => isPathInReview(ctx, path)),
+  };
+}
+
+function isPathInReview(ctx: RuleContext, path: string): boolean {
+  if (ctx.change === null || ctx.change.scanMode === "all") return true;
+  const normalized = normalizePath(path);
+  return ctx.change.changedFiles.some((changedPath) => {
+    const changed = normalizePath(changedPath);
+    return changed === normalized || changed.startsWith(`${normalized}/`);
+  });
+}
+
+function normalizePath(path: string): string {
+  return path.replaceAll("\\", "/").replace(/^\.\//, "");
 }
 
 function reportPositives(ctx: RuleContext, model: FactoryModel, detections: Detection[]): void {
