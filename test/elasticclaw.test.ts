@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { TerminalRenderer, createAdversaryRunEnvelope } from "@adversarylabs/sdk";
 import { createApp } from "../src/index.ts";
@@ -157,6 +160,56 @@ test("output ordering is deterministic", async () => {
     "elasticclaw.goal.no-completion",
     "elasticclaw.goal.ambiguous",
   ]);
+});
+
+test("changed mode reports only findings attributable to runner-supplied files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "elasticclaw-change-scope-"));
+  await mkdir(join(root, ".elasticclaw"), { recursive: true });
+  const changedPath = ".elasticclaw/goal-changed.yml";
+  const legacyPath = ".elasticclaw/goal-legacy.yml";
+  await writeFile(join(root, changedPath), `kind: goal
+id: reduce-latency
+objective: Reduce API p95 latency from 400ms to below 250ms.
+expected_artifacts:
+  - benchmark.json
+success_criteria:
+  - The benchmark reports p95 latency below 250ms.
+`);
+  await writeFile(join(root, legacyPath), `kind: goal
+id: improve
+objective: Improve performance.
+`);
+
+  const output = await createApp().run({
+    input: {
+      source: { path: root },
+      change: {
+        type: "diff",
+        base_ref: "base",
+        head_ref: "head",
+        scan_mode: "changed",
+        changed_files: [changedPath],
+      },
+    },
+  });
+  assert.equal(output.target.filesScanned, 1);
+  assert.equal(output.findings.some((finding) =>
+    finding.evidence.some((evidence) => evidence.location?.file === legacyPath)), false);
+
+  const full = await createApp().run({
+    input: {
+      source: { path: root },
+      change: {
+        type: "diff",
+        base_ref: "base",
+        head_ref: "head",
+        scan_mode: "all",
+        changed_files: [changedPath],
+      },
+    },
+  });
+  assert.equal(full.findings.some((finding) =>
+    finding.evidence.some((evidence) => evidence.location?.file === legacyPath)), true);
 });
 
 test("terminal rendering does not leak raw factory metadata", async () => {
