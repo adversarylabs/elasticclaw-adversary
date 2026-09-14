@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -140,7 +140,7 @@ test("malformed factory documents fail with a useful line location", async () =>
 test("a well-structured factory produces concrete positives and no findings", async () => {
   const output = await review("good", { raw: true });
   assert.equal(output.adversary.name, "factory/elasticclaw");
-  assert.equal(output.adversary.version, "0.0.16");
+  assert.equal(output.adversary.version, (JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")) as { version: string }).version);
   assert.equal(output.target.filesScanned, 6);
   assert.deepEqual(output.findings, []);
   assert.deepEqual(output.rawObservations, []);
